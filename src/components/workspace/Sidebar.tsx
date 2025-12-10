@@ -1,15 +1,19 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
-  LayoutDashboard, 
-  Code2, 
-  FolderOpen, 
-  Settings, 
-  Users, 
-  Shield, 
+  Home,
+  Search,
+  Grid3X3,
+  Star,
+  Users,
+  Compass,
+  LayoutTemplate,
+  BookOpen,
+  Share2,
+  Zap,
   LogOut,
-  ChevronRight,
-  Sparkles
+  ChevronDown,
+  Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -18,28 +22,20 @@ interface NavItemProps {
   label: string;
   active?: boolean;
   onClick?: () => void;
-  badge?: string;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ icon, label, active, onClick, badge }) => (
+const NavItem: React.FC<NavItemProps> = ({ icon, label, active, onClick }) => (
   <button
     onClick={onClick}
     className={cn(
-      "nav-item w-full group",
-      active && "active"
+      "flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-all duration-200",
+      active 
+        ? "text-white bg-white/10" 
+        : "text-[hsl(var(--workspace-text-muted))] hover:text-white hover:bg-white/5"
     )}
   >
     <span className="flex-shrink-0">{icon}</span>
-    <span className="flex-1 text-left text-sm">{label}</span>
-    {badge && (
-      <span className="px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary">
-        {badge}
-      </span>
-    )}
-    <ChevronRight className={cn(
-      "w-4 h-4 opacity-0 -translate-x-2 transition-all duration-200",
-      "group-hover:opacity-100 group-hover:translate-x-0"
-    )} />
+    <span>{label}</span>
   </button>
 );
 
@@ -51,131 +47,154 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange }) => {
   const { user, role, signOut, isAdmin, isDeveloper } = useAuth();
 
-  const getRoleBadgeClass = () => {
-    switch (role) {
-      case 'admin': return 'role-admin';
-      case 'developer': return 'role-developer';
-      default: return 'role-user';
-    }
-  };
+  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
 
   return (
-    <aside className="workspace-sidebar w-64 flex flex-col h-screen">
+    <aside className="w-56 flex flex-col h-screen bg-[hsl(var(--workspace-sidebar))] border-r border-[hsl(var(--workspace-border))]">
       {/* Logo */}
-      <div className="p-4 border-b border-workspace-border">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center glow-effect">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <h1 className="font-semibold text-workspace-text">Lovable</h1>
-            <p className="text-xs text-workspace-text-muted">Workspace</p>
+      <div className="p-4">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+            <span className="text-white text-xs font-bold">L</span>
           </div>
         </div>
       </div>
 
-      {/* User Info */}
-      <div className="p-4 border-b border-workspace-border">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/50 to-purple-600/50 flex items-center justify-center">
-            <span className="text-sm font-medium text-white">
-              {user?.email?.charAt(0).toUpperCase()}
-            </span>
+      {/* Workspace Dropdown */}
+      <div className="px-3 mb-2">
+        <button className="flex items-center gap-2 w-full px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+          <div className="w-6 h-6 rounded bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white text-xs font-medium">
+            {userName.charAt(0).toUpperCase()}
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-workspace-text truncate">
-              {user?.email?.split('@')[0]}
-            </p>
-            <span className={cn("role-badge", getRoleBadgeClass())}>
-              {role}
-            </span>
-          </div>
-        </div>
+          <span className="flex-1 text-left text-sm text-white truncate">{userName}'s Workspace</span>
+          <ChevronDown className="w-4 h-4 text-[hsl(var(--workspace-text-muted))]" />
+        </button>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-        <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-workspace-text-muted">
-          Main
-        </p>
-        
+      {/* Main Navigation */}
+      <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
         <NavItem
-          icon={<LayoutDashboard className="w-5 h-5" />}
-          label="Dashboard"
+          icon={<Home className="w-4 h-4" />}
+          label="Home"
           active={activeSection === 'dashboard'}
           onClick={() => onSectionChange('dashboard')}
         />
-        
         <NavItem
-          icon={<FolderOpen className="w-5 h-5" />}
-          label="Projects"
-          active={activeSection === 'projects'}
-          onClick={() => onSectionChange('projects')}
-        />
-        
-        <NavItem
-          icon={<Code2 className="w-5 h-5" />}
-          label="Editor"
-          active={activeSection === 'editor'}
-          onClick={() => onSectionChange('editor')}
-          badge={!isDeveloper() && !isAdmin() ? 'View Only' : undefined}
+          icon={<Search className="w-4 h-4" />}
+          label="Search"
+          active={activeSection === 'search'}
+          onClick={() => onSectionChange('search')}
         />
 
-        {(isAdmin() || isDeveloper()) && (
-          <>
-            <div className="py-3">
-              <div className="h-px bg-workspace-border" />
-            </div>
-            
-            <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-workspace-text-muted">
-              Developer
-            </p>
-            
-            <NavItem
-              icon={<Settings className="w-5 h-5" />}
-              label="Settings"
-              active={activeSection === 'settings'}
-              onClick={() => onSectionChange('settings')}
-            />
-          </>
-        )}
+        {/* Projects Section */}
+        <div className="pt-4">
+          <p className="px-3 py-2 text-xs font-medium text-[hsl(var(--workspace-text-muted))]">
+            Projects
+          </p>
+          <NavItem
+            icon={<Grid3X3 className="w-4 h-4" />}
+            label="All projects"
+            active={activeSection === 'projects'}
+            onClick={() => onSectionChange('projects')}
+          />
+          <NavItem
+            icon={<Star className="w-4 h-4" />}
+            label="Starred"
+            active={activeSection === 'starred'}
+            onClick={() => onSectionChange('starred')}
+          />
+          <NavItem
+            icon={<Users className="w-4 h-4" />}
+            label="Shared with me"
+            active={activeSection === 'shared'}
+            onClick={() => onSectionChange('shared')}
+          />
+        </div>
 
+        {/* Resources Section */}
+        <div className="pt-4">
+          <p className="px-3 py-2 text-xs font-medium text-[hsl(var(--workspace-text-muted))]">
+            Resources
+          </p>
+          <NavItem
+            icon={<Compass className="w-4 h-4" />}
+            label="Discover"
+            active={activeSection === 'discover'}
+            onClick={() => onSectionChange('discover')}
+          />
+          <NavItem
+            icon={<LayoutTemplate className="w-4 h-4" />}
+            label="Templates"
+            active={activeSection === 'templates'}
+            onClick={() => onSectionChange('templates')}
+          />
+          <NavItem
+            icon={<BookOpen className="w-4 h-4" />}
+            label="Learn"
+            active={activeSection === 'learn'}
+            onClick={() => onSectionChange('learn')}
+          />
+        </div>
+
+        {/* Admin Section */}
         {isAdmin() && (
-          <>
-            <div className="py-3">
-              <div className="h-px bg-workspace-border" />
-            </div>
-            
-            <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-workspace-text-muted">
+          <div className="pt-4">
+            <p className="px-3 py-2 text-xs font-medium text-[hsl(var(--workspace-text-muted))]">
               Admin
             </p>
-            
             <NavItem
-              icon={<Users className="w-5 h-5" />}
+              icon={<Users className="w-4 h-4" />}
               label="Users"
               active={activeSection === 'users'}
               onClick={() => onSectionChange('users')}
             />
-            
             <NavItem
-              icon={<Shield className="w-5 h-5" />}
-              label="Permissions"
-              active={activeSection === 'permissions'}
-              onClick={() => onSectionChange('permissions')}
+              icon={<Settings className="w-4 h-4" />}
+              label="Settings"
+              active={activeSection === 'settings'}
+              onClick={() => onSectionChange('settings')}
             />
-          </>
+          </div>
         )}
       </nav>
 
-      {/* Sign Out */}
-      <div className="p-3 border-t border-workspace-border">
-        <button
-          onClick={signOut}
-          className="nav-item w-full text-role-admin/80 hover:text-role-admin hover:bg-role-admin/10"
-        >
-          <LogOut className="w-5 h-5" />
-          <span className="text-sm">Sign Out</span>
+      {/* Bottom Section */}
+      <div className="p-3 space-y-1 border-t border-[hsl(var(--workspace-border))]">
+        <button className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-[hsl(var(--workspace-text-muted))] hover:text-white hover:bg-white/5 transition-colors">
+          <Share2 className="w-4 h-4" />
+          <div className="flex-1 text-left">
+            <p className="text-sm">Share Lovable</p>
+            <p className="text-xs text-[hsl(var(--workspace-text-muted))]">Get 10 credits each</p>
+          </div>
+          <div className="w-6 h-6 rounded bg-white/10 flex items-center justify-center">
+            <Grid3X3 className="w-3 h-3" />
+          </div>
         </button>
+
+        <button className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-[hsl(var(--workspace-text-muted))] hover:text-white hover:bg-white/5 transition-colors">
+          <Zap className="w-4 h-4" />
+          <div className="flex-1 text-left">
+            <p className="text-sm">Upgrade to Pro</p>
+            <p className="text-xs text-[hsl(var(--workspace-text-muted))]">Unlock more benefits</p>
+          </div>
+          <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+            <Zap className="w-3 h-3 text-white" />
+          </div>
+        </button>
+
+        {/* User Avatar & Sign Out */}
+        <div className="flex items-center gap-2 pt-2">
+          <button className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-primary to-purple-600 text-white text-sm font-medium">
+            {userName.charAt(0).toUpperCase()}
+          </button>
+          <button 
+            onClick={signOut}
+            className="p-2 rounded-lg text-[hsl(var(--workspace-text-muted))] hover:text-white hover:bg-white/5 transition-colors"
+            title="Sign Out"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </aside>
   );

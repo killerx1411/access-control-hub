@@ -6,32 +6,32 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --background: 220 14% 8%;
+    --foreground: 220 9% 94%;
+    --card: 220 14% 11%;
+    --card-foreground: 220 9% 94%;
+    --popover: 220 14% 11%;
+    --popover-foreground: 220 9% 94%;
     --primary: 262 83% 58%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --secondary: 220 14% 16%;
+    --secondary-foreground: 220 9% 94%;
+    --muted: 220 14% 16%;
+    --muted-foreground: 220 9% 46%;
     --accent: 262 83% 58%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 20%;
+    --input: 220 13% 20%;
     --ring: 262 83% 58%;
     --radius: 0.5rem;
     
     /* Custom workspace colors */
-    --workspace-bg: 220 13% 18%;
-    --workspace-sidebar: 220 15% 13%;
-    --workspace-panel: 220 14% 11%;
-    --workspace-border: 220 13% 23%;
+    --workspace-bg: 220 13% 10%;
+    --workspace-sidebar: 220 15% 8%;
+    --workspace-panel: 220 14% 14%;
+    --workspace-border: 220 13% 18%;
     --workspace-text: 220 9% 76%;
     --workspace-text-muted: 220 9% 46%;
     --workspace-accent: 262 83% 58%;
@@ -41,8 +41,8 @@
     --workspace-error: 0 84% 60%;
     
     /* Editor colors */
-    --editor-bg: 220 14% 8%;
-    --editor-line: 220 14% 14%;
+    --editor-bg: 220 14% 6%;
+    --editor-line: 220 14% 12%;
     --editor-selection: 262 50% 30%;
     --editor-gutter: 220 9% 30%;
     
@@ -54,7 +54,7 @@
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(280 80% 50%) 100%);
     --gradient-glow: radial-gradient(ellipse at center, hsl(262 83% 58% / 0.15) 0%, transparent 70%);
-    --gradient-panel: linear-gradient(180deg, hsl(220 14% 12%) 0%, hsl(220 14% 9%) 100%);
+    --gradient-panel: linear-gradient(180deg, hsl(220 14% 14%) 0%, hsl(220 14% 11%) 100%);
     
     /* Shadows */
     --shadow-glow: 0 0 40px hsl(262 83% 58% / 0.2);
