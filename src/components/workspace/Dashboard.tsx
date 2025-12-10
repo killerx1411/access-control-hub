@@ -1,192 +1,273 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { 
-  BarChart3, 
-  Users, 
-  FolderOpen, 
-  Activity,
-  TrendingUp,
-  Clock
+  Plus,
+  Paperclip,
+  Palette,
+  MessageSquare,
+  AudioLines,
+  Send,
+  ArrowRight,
+  FolderOpen
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
-interface StatCardProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  trend?: string;
-  trendUp?: boolean;
+interface Project {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ icon, label, value, trend, trendUp }) => (
-  <div className="card-workspace animate-slide-up">
-    <div className="flex items-start justify-between">
-      <div className="p-2 rounded-lg bg-primary/10">
-        {icon}
-      </div>
-      {trend && (
-        <span className={cn(
-          "flex items-center gap-1 text-xs font-medium",
-          trendUp ? "text-workspace-success" : "text-role-admin"
-        )}>
-          <TrendingUp className={cn("w-3 h-3", !trendUp && "rotate-180")} />
-          {trend}
-        </span>
-      )}
-    </div>
-    <div className="mt-4">
-      <p className="text-2xl font-bold text-workspace-text">{value}</p>
-      <p className="text-sm text-workspace-text-muted">{label}</p>
-    </div>
-  </div>
-);
-
-interface ActivityItemProps {
-  action: string;
-  user: string;
-  time: string;
-  type: 'create' | 'update' | 'delete';
+interface DashboardProps {
+  onSelectProject?: (project: Project) => void;
 }
 
-const ActivityItem: React.FC<ActivityItemProps> = ({ action, user, time, type }) => {
-  const colors = {
-    create: 'bg-workspace-success',
-    update: 'bg-primary',
-    delete: 'bg-role-admin',
+export const Dashboard: React.FC<DashboardProps> = ({ onSelectProject }) => {
+  const { user, canEdit } = useAuth();
+  const [prompt, setPrompt] = useState('');
+  const [activeTab, setActiveTab] = useState<'recent' | 'my-projects' | 'templates'>('recent');
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'there';
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('projects')
+      .select('id, name, description, created_at, updated_at')
+      .order('updated_at', { ascending: false })
+      .limit(6);
+
+    if (!error && data) {
+      setProjects(data);
+    }
+    setLoading(false);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!prompt.trim() || !canEdit()) return;
+
+    // Create a new project with the prompt as the name
+    const { data, error } = await supabase
+      .from('projects')
+      .insert({
+        name: prompt.slice(0, 50),
+        description: prompt,
+        owner_id: user?.id
+      })
+      .select()
+      .single();
+
+    if (!error && data && onSelectProject) {
+      onSelectProject(data);
+    }
+    setPrompt('');
+    fetchProjects();
   };
 
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-workspace-border last:border-0">
-      <div className={cn("w-2 h-2 rounded-full mt-2", colors[type])} />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm text-workspace-text">{action}</p>
-        <p className="text-xs text-workspace-text-muted">by {user}</p>
-      </div>
-      <span className="text-xs text-workspace-text-muted flex items-center gap-1">
-        <Clock className="w-3 h-3" />
-        {time}
-      </span>
-    </div>
-  );
-};
-
-export const Dashboard: React.FC = () => {
-  const { role, isAdmin } = useAuth();
-
-  return (
-    <div className="p-6 space-y-6 animate-fade-in">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-workspace-text">Dashboard</h1>
-        <p className="text-workspace-text-muted">
-          Welcome back! Here's an overview of your workspace.
-        </p>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          icon={<FolderOpen className="w-5 h-5 text-primary" />}
-          label="Total Projects"
-          value="12"
-          trend="+2 this week"
-          trendUp
+    <div className="flex-1 flex flex-col min-h-screen">
+      {/* Gradient Background */}
+      <div className="flex-1 relative overflow-hidden">
+        {/* Gradient overlay */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: `
+              radial-gradient(ellipse 80% 80% at 50% 50%, 
+                hsl(240 70% 40% / 0.6) 0%,
+                hsl(280 80% 40% / 0.5) 25%,
+                hsl(320 85% 45% / 0.4) 50%,
+                hsl(340 90% 50% / 0.3) 75%,
+                transparent 100%
+              )
+            `
+          }}
         />
-        <StatCard
-          icon={<Activity className="w-5 h-5 text-primary" />}
-          label="Active Sessions"
-          value="3"
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: `
+              radial-gradient(ellipse 60% 50% at 20% 80%, 
+                hsl(340 90% 55% / 0.5) 0%,
+                transparent 60%
+              ),
+              radial-gradient(ellipse 50% 40% at 80% 20%, 
+                hsl(260 85% 50% / 0.4) 0%,
+                transparent 50%
+              )
+            `
+          }}
         />
-        {(role === 'admin' || role === 'developer') && (
-          <StatCard
-            icon={<BarChart3 className="w-5 h-5 text-primary" />}
-            label="Deployments"
-            value="28"
-            trend="+5 this month"
-            trendUp
-          />
-        )}
-        {isAdmin() && (
-          <StatCard
-            icon={<Users className="w-5 h-5 text-primary" />}
-            label="Team Members"
-            value="8"
-            trend="+1 new"
-            trendUp
-          />
-        )}
-      </div>
 
-      {/* Activity & Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Activity */}
-        <div className="card-workspace">
-          <h2 className="text-lg font-semibold text-workspace-text mb-4">Recent Activity</h2>
-          <div className="space-y-1">
-            <ActivityItem
-              action="Created new project 'Landing Page'"
-              user="john@example.com"
-              time="2h ago"
-              type="create"
-            />
-            <ActivityItem
-              action="Updated 'Dashboard' component"
-              user="sarah@example.com"
-              time="5h ago"
-              type="update"
-            />
-            <ActivityItem
-              action="Deployed to production"
-              user="admin@example.com"
-              time="1d ago"
-              type="create"
-            />
-            {isAdmin() && (
-              <ActivityItem
-                action="Removed deprecated API endpoint"
-                user="admin@example.com"
-                time="2d ago"
-                type="delete"
+        {/* Content */}
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-[60vh] px-4">
+          <h1 className="text-4xl md:text-5xl font-semibold text-white mb-8 text-center">
+            Let's create, <span className="italic">{userName}</span>
+          </h1>
+
+          {/* Prompt Input */}
+          <form onSubmit={handleSubmit} className="w-full max-w-2xl">
+            <div className="relative bg-[hsl(var(--workspace-panel))] rounded-2xl border border-[hsl(var(--workspace-border))] overflow-hidden">
+              <input
+                type="text"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Ask Lovable to create a landing page for my..."
+                className="w-full px-6 py-4 bg-transparent text-white placeholder:text-[hsl(var(--workspace-text-muted))] focus:outline-none text-base"
+                disabled={!canEdit()}
               />
-            )}
-          </div>
-        </div>
+              
+              {/* Input Actions */}
+              <div className="flex items-center gap-2 px-4 pb-4">
+                <button 
+                  type="button"
+                  className="p-2 rounded-lg text-[hsl(var(--workspace-text-muted))] hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+                <button 
+                  type="button"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-[hsl(var(--workspace-text-muted))] hover:text-white hover:bg-white/10 transition-colors border border-[hsl(var(--workspace-border))]"
+                >
+                  <Paperclip className="w-4 h-4" />
+                  Attach
+                </button>
+                <button 
+                  type="button"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-[hsl(var(--workspace-text-muted))] hover:text-white hover:bg-white/10 transition-colors border border-[hsl(var(--workspace-border))]"
+                >
+                  <Palette className="w-4 h-4" />
+                  Theme
+                </button>
 
-        {/* Role Permissions */}
-        <div className="card-workspace">
-          <h2 className="text-lg font-semibold text-workspace-text mb-4">Your Permissions</h2>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-workspace-border/30">
-              <span className="text-sm text-workspace-text">View Projects</span>
-              <span className="text-xs text-workspace-success">✓ Allowed</span>
+                <div className="flex-1" />
+
+                <button 
+                  type="button"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-[hsl(var(--workspace-text-muted))] hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Chat
+                </button>
+                <button 
+                  type="button"
+                  className="p-2 rounded-lg text-[hsl(var(--workspace-text-muted))] hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  <AudioLines className="w-4 h-4" />
+                </button>
+                <button 
+                  type="submit"
+                  disabled={!prompt.trim() || !canEdit()}
+                  className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-            <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-workspace-border/30">
-              <span className="text-sm text-workspace-text">Edit Code</span>
-              <span className={cn(
-                "text-xs",
-                role === 'user' ? "text-role-admin" : "text-workspace-success"
-              )}>
-                {role === 'user' ? '✗ Restricted' : '✓ Allowed'}
-              </span>
+            {!canEdit() && (
+              <p className="text-center text-sm text-[hsl(var(--workspace-text-muted))] mt-2">
+                You need developer or admin access to create projects
+              </p>
+            )}
+          </form>
+        </div>
+      </div>
+
+      {/* Projects Section */}
+      <div className="bg-[hsl(var(--workspace-bg))] border-t border-[hsl(var(--workspace-border))]">
+        <div className="max-w-6xl mx-auto px-6 py-6">
+          {/* Tabs */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex gap-1">
+              <button 
+                onClick={() => setActiveTab('recent')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  activeTab === 'recent' 
+                    ? 'bg-white/10 text-white' 
+                    : 'text-[hsl(var(--workspace-text-muted))] hover:text-white'
+                }`}
+              >
+                Recently viewed
+              </button>
+              <button 
+                onClick={() => setActiveTab('my-projects')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  activeTab === 'my-projects' 
+                    ? 'bg-white/10 text-white' 
+                    : 'text-[hsl(var(--workspace-text-muted))] hover:text-white'
+                }`}
+              >
+                My projects
+              </button>
+              <button 
+                onClick={() => setActiveTab('templates')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  activeTab === 'templates' 
+                    ? 'bg-white/10 text-white' 
+                    : 'text-[hsl(var(--workspace-text-muted))] hover:text-white'
+                }`}
+              >
+                Templates
+              </button>
             </div>
-            <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-workspace-border/30">
-              <span className="text-sm text-workspace-text">Deploy to Production</span>
-              <span className={cn(
-                "text-xs",
-                role === 'user' ? "text-role-admin" : "text-workspace-success"
-              )}>
-                {role === 'user' ? '✗ Restricted' : '✓ Allowed'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-workspace-border/30">
-              <span className="text-sm text-workspace-text">Manage Users</span>
-              <span className={cn(
-                "text-xs",
-                role === 'admin' ? "text-workspace-success" : "text-role-admin"
-              )}>
-                {role === 'admin' ? '✓ Allowed' : '✗ Admin Only'}
-              </span>
-            </div>
+            <button className="flex items-center gap-2 text-sm text-[hsl(var(--workspace-text-muted))] hover:text-white transition-colors">
+              Browse all
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Projects Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {loading ? (
+              // Skeleton loaders
+              Array.from({ length: 3 }).map((_, i) => (
+                <div 
+                  key={i}
+                  className="h-40 rounded-xl bg-[hsl(var(--workspace-panel))] border border-[hsl(var(--workspace-border))] animate-pulse"
+                />
+              ))
+            ) : projects.length === 0 ? (
+              <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+                <FolderOpen className="w-12 h-12 text-[hsl(var(--workspace-text-muted))] mb-4" />
+                <p className="text-[hsl(var(--workspace-text-muted))] mb-2">No projects yet</p>
+                <p className="text-sm text-[hsl(var(--workspace-text-muted))]">
+                  Create your first project using the prompt above
+                </p>
+              </div>
+            ) : (
+              projects.map((project) => (
+                <button
+                  key={project.id}
+                  onClick={() => onSelectProject?.(project)}
+                  className="group h-40 rounded-xl bg-[hsl(var(--workspace-panel))] border border-[hsl(var(--workspace-border))] p-4 text-left hover:border-primary/50 transition-colors overflow-hidden"
+                >
+                  <div className="flex flex-col h-full">
+                    <h3 className="font-medium text-white group-hover:text-primary transition-colors truncate">
+                      {project.name}
+                    </h3>
+                    <p className="text-sm text-[hsl(var(--workspace-text-muted))] mt-1 line-clamp-2">
+                      {project.description || 'No description'}
+                    </p>
+                    <div className="mt-auto">
+                      <p className="text-xs text-[hsl(var(--workspace-text-muted))]">
+                        {project.updated_at 
+                          ? new Date(project.updated_at).toLocaleDateString()
+                          : 'Recently created'}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              ))
+            )}
           </div>
         </div>
       </div>

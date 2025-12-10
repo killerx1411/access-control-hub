@@ -29,7 +29,11 @@ const Index: React.FC = () => {
     return null; // Will redirect to auth
   }
 
-  return <WorkspaceLayout />;
+  return (
+    <div className="min-h-screen w-full">
+      <WorkspaceLayout />
+    </div>
+  );
 };
 
 export default Index;
